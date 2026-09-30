@@ -86,10 +86,11 @@ crontab -e                               # host/crontab.example 참고 (백업·
 
 ## GZCTF 관리자 설정값
 
-수명 관련 값은 `appsettings.json`이 아니라 **관리자 화면(DB)** 에서 설정해야 적용됩니다.
+사이트 제목과 수명 관련 값은 `appsettings.json`이 아니라 **관리자 화면(DB)** 에서 설정해야 적용됩니다.
 
 | 설정 위치 | 항목 | 값 |
 |---|---|---|
+| 관리자 → 설정 → 전역 설정 | 사이트 제목 | WINS CTF |
 | 관리자 → 설정 → 컨테이너 정책 | 기본 수명 | 30분 |
 | 관리자 → 설정 → 컨테이너 정책 | 연장 시간 | 30분 |
 | 관리자 → 설정 → 컨테이너 정책 | 갱신 가능 구간 | 만료 10분 전부터 |
@@ -147,3 +148,19 @@ CPU 제한은 리눅스에서 사실상 적용되지 않으므로 대회 중 `do
 - **자원 우선권:** gzctf·db에 `cpu_shares: 4096`, 도커 로그 10MB × 3개 제한
 - **백업:** `host/backup.sh`를 cron으로 6시간마다 실행 (`backups/`, 7일 보관)
 - `.env`와 `XOR_KEY`는 유출 시 플래그가 노출되니 저장소나 채팅에 올리지 마세요.
+
+## 동작 확인 (서버에 올린 뒤)
+
+로컬(Docker Desktop, 2026-09-30)에서 아래 항목을 확인했습니다.
+플랫폼 기동, 인스턴스 생성, 포트 매핑(32768~), 인스턴스별 플래그 주입, 256MB 제한, 컨테이너 간 통신 차단(icc=false), 저권한 앱에서 플래그·환경변수 접근 불가.
+
+**Isolated 네트워크의 외부 인터넷 차단은 Docker Desktop에서 적용되지 않아 확인하지 못했습니다.** 실서버(리눅스)에서 한 번 확인하세요.
+
+```bash
+# 관리자 화면에서 문제의 "테스트 컨테이너"를 띄운 뒤
+C=$(docker ps --filter network=gzctf-isolated --format '{{.Names}}' | head -1)
+docker exec "$C" wget -q -T 5 -O- http://example.com >/dev/null && echo "인터넷 됨(문제)" || echo "차단됨(OK)"
+```
+
+> ⚠️ 4차 공지 원문의 entrypoint 예시 `"${GZCTF_FLAG:-${FLAG:-WINS{placeholder}}}"` 는 플래그 끝에 `}`가 하나 더 붙는 버그가 있습니다.
+> 이 레포의 `templates/dynamic-challenge/entrypoint.sh`처럼 기본값을 변수로 분리해 쓰세요.

@@ -2,7 +2,8 @@
 FROM alpine:3.20
 
 # su-exec: root → 저권한 사용자 전환 (debian 계열이면 gosu)
-RUN apk add --no-cache su-exec \
+# busybox-extras: 더미 웹서버(httpd)용 — 실제 문제에선 필요한 패키지로 교체
+RUN apk add --no-cache su-exec busybox-extras \
  && adduser -D -H -s /sbin/nologin appuser
 
 WORKDIR /app

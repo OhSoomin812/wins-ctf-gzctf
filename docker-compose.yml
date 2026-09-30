@@ -38,7 +38,8 @@ services:
       - "./data/db:/var/lib/postgresql/data"
     cpu_shares: 4096
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d gzctf"]
+      # -h 127.0.0.1: 최초 초기화 중(unix 소켓만 열린 임시 서버)엔 통과하지 않도록 TCP로 확인
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d gzctf"]
       interval: 10s
       timeout: 5s
       retries: 5
