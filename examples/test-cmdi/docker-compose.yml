@@ -1,0 +1,10 @@
+# 로컬 검수:  FLAG='WINS{local_test}' docker compose up -d --build  →  http://localhost:18080
+services:
+  chal:
+    build: .
+    image: chal/test-cmdi:v1
+    environment:
+      - "FLAG=${FLAG:-WINS{local_test}}"
+    ports:
+      - "18080:8080"
+    mem_limit: 256m

@@ -34,6 +34,8 @@
 └── templates/
     ├── dynamic-challenge/  # 동적 문제 템플릿 (Dockerfile, entrypoint.sh, 검수용 compose, README)
     └── shared-challenge/   # 공유 문제용 compose (read_only, tmpfs, 재시작 라벨)
+└── examples/
+    └── test-cmdi/          # 플랫폼 점검용 RCE 테스트 문제 (명령어 주입)
 ```
 
 ## 빠른 시작 (로컬 테스트)
