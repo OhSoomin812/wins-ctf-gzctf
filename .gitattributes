@@ -1,0 +1,2 @@
+# 셸 스크립트·설정은 LF 고정 (Windows에서 clone해도 리눅스 VM에서 그대로 동작)
+* text=auto eol=lf

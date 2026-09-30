@@ -1,0 +1,23 @@
+# 공유 문제 (정보 노출 / 인증 우회처럼 서버 상태를 바꾸지 않는 문제)
+# 배포에도 이 compose를 그대로 사용. 포트는 1차 시트에 배정된 10000~19999 중 하나.
+services:
+  chal:
+    build: .
+    image: chal/CHANGE_ME:v1
+    container_name: chal-CHANGE_ME     # 공유 문제만 고정 이름 허용
+    restart: unless-stopped
+    environment:
+      - "FLAG=${FLAG:?FLAG 를 지정하세요}"   # 공유 문제는 정적 플래그 (.env 에 FLAG, CHAL_PORT 기재)
+      - "FLAG_PATH=/tmp/flag"            # read_only 이므로 tmpfs 에 기록
+    ports:
+      - "${CHAL_PORT:?1차 시트 배정 포트(10000~19999)를 지정하세요}:8080"
+    read_only: true                    # 파일 변조 방지
+    tmpfs:
+      - /tmp
+    mem_limit: 256m
+    labels:
+      - "wins.shared=true"             # host/restart-shared.sh 가 1시간마다 재시작
+    networks: [chal]
+
+networks:
+  chal: {}                             # 챌린지별 네트워크 (다른 문제와 격리)

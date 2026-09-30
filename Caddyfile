@@ -1,0 +1,5 @@
+# HTTPS 자동 발급 (Let's Encrypt). DOMAIN 은 .env 에서 주입
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy gzctf:8080
+}

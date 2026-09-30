@@ -1,0 +1,67 @@
+# WINS CTF — GZCTF 플랫폼 (VM 한 대 구성)
+#   로컬 테스트: docker compose up -d                 → http://localhost:8080
+#   실서버:     docker compose --profile prod up -d  → https://$DOMAIN (Caddy)
+#
+# 첫 기동 전에 반드시 host/setup-networks.sh 를 먼저 실행하세요.
+# (GZCTF는 gzctf-open / gzctf-isolated 네트워크가 없을 때만 만들고, 그땐 icc가 켜진 채로 생성됨)
+services:
+  gzctf:
+    image: gztime/gzctf:v1.8.7          # 태그 고정. latest 금지
+    restart: unless-stopped
+    environment:
+      - "GZCTF_ADMIN_PASSWORD=${GZCTF_ADMIN_PASSWORD}"
+      - "ConnectionStrings__Database=Host=db;Port=5432;Database=gzctf;Username=postgres;Password=${DB_PASSWORD}"
+      - "XorKey=${XOR_KEY}"
+      - "ContainerProvider__PublicEntry=${PUBLIC_ENTRY}"
+    ports:
+      # 127.0.0.1 에만 바인딩 → 외부·문제 컨테이너에서 8080 직접 접근 불가, Caddy만 접근
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "./appsettings.json:/app/appsettings.json:ro"
+      - "./data/files:/app/files"
+      # 인스턴스 생성용 도커 소켓 — GZCTF 본체에만. 문제 컨테이너엔 절대 마운트 금지
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    cpu_shares: 4096                    # CPU 경합 시 플랫폼 우선 (기본값 1024)
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - gzctf
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - "POSTGRES_PASSWORD=${DB_PASSWORD}"
+      - "POSTGRES_DB=gzctf"
+    volumes:
+      - "./data/db:/var/lib/postgresql/data"
+    cpu_shares: 4096
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gzctf"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gzctf
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["prod"]                  # 실서버에서만 기동
+    restart: unless-stopped
+    environment:
+      - "DOMAIN=${DOMAIN}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./Caddyfile:/etc/caddy/Caddyfile:ro"
+      - "./data/caddy:/data"
+    depends_on:
+      - gzctf
+    networks:
+      - gzctf
+
+networks:
+  gzctf:
+    driver: bridge

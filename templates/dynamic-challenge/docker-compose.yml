@@ -1,0 +1,11 @@
+# 로컬 검수 전용. 대회에서는 GZCTF가 이미지만 가져가 이름·포트를 자동 배정합니다.
+#   FLAG='WINS{local_test}' docker compose up -d --build
+services:
+  chal:
+    build: .
+    image: chal/CHANGE_ME:v1          # README 배포 정보의 이미지 이름과 동일하게
+    environment:
+      - "FLAG=${FLAG:-WINS{local_test}}"
+    ports:
+      - "18080:8080"                  # 로컬 확인용 (대회 배포와 무관)
+    mem_limit: 256m                   # 대회 메모리 제한과 동일하게 검수

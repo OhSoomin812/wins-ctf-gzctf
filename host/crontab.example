@@ -1,0 +1,5 @@
+# crontab -e 에 추가 (경로는 레포 위치에 맞게 수정)
+# 6시간마다 DB 백업
+0 */6 * * * /home/ubuntu/gzctf/host/backup.sh >> /tmp/gzctf-backup.log 2>&1
+# 1시간마다 공유 문제 재시작
+0 * * * *   /home/ubuntu/gzctf/host/restart-shared.sh >> /tmp/restart-shared.log 2>&1
